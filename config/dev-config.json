@@ -1,0 +1,15 @@
+{
+    "webapp": {
+        "name": "webapp03site02",
+        "tags": {
+            "Environment": "dev",
+            "Project": "SPOL"
+        },
+        "properties": {
+            "serverFarmId": "/subscriptions/XXXX/resourceGroups/webapp03/providers/Microsoft.Web/serverfarms/XXX",
+            "hostingEnvironmentProfile": {
+                "id": "/subscriptions/XXX/resourceGroups/webapp03/providers/Microsoft.Web/hostingEnvironments/webapp03ase"
+            }
+        }
+    }
+}
