@@ -21,11 +21,11 @@ param skuName string = 'F1'
 param skuCapacity int = 1
 
 @description('The admin user of the SQL Server')
-param sqlAdministratorLogin string
+param sqlAdministratorLogin string = 'tiger'
 
 @description('The password of the admin user of the SQL Server')
 @secure()
-param sqlAdministratorLoginPassword string
+param sqlAdministratorLoginPassword string 
 
 @description('Location for all resources.')
 param location string = resourceGroup().location
