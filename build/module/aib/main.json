@@ -1,0 +1,245 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.4.613.9944",
+      "templateHash": "4826667112187763399"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "The Azure region where resources in the template should be deployed."
+      }
+    },
+    "templateIdentityName": {
+      "type": "string",
+      "defaultValue": "[substring(format('ImageGallery_{0}', guid(resourceGroup().id)), 0, 21)]",
+      "metadata": {
+        "description": "Name of the user-assigned managed identity used by Azure Image Builder template, and for triggering the Azure Image Builder build at the end of the deployment"
+      }
+    },
+    "templateIdentityRoleDefinitionName": {
+      "type": "string",
+      "defaultValue": "[guid(resourceGroup().id)]",
+      "metadata": {
+        "description": "Permissions to allow for the user-assigned managed identity."
+      }
+    },
+    "imageGalleryName": {
+      "type": "string",
+      "defaultValue": "[substring(format('ImageGallery_{0}', guid(resourceGroup().id)), 0, 21)]",
+      "metadata": {
+        "description": "Name of the new Azure Image Gallery resource."
+      }
+    },
+    "imageDefinitionProperties": {
+      "type": "object",
+      "defaultValue": {
+        "name": "UbuntuServer18LTS",
+        "publisher": "Canonical",
+        "offer": "UbuntuServer",
+        "sku": "18.04-LTS"
+      },
+      "metadata": {
+        "description": "Detailed image information to set for the custom image produced by the Azure Image Builder build."
+      }
+    },
+    "imageTemplateName": {
+      "type": "string",
+      "defaultValue": "UbuntuServer_18.04LTS_Baseline_Template",
+      "metadata": {
+        "description": "Name of the template to create in Azure Image Builder."
+      }
+    },
+    "runOutputName": {
+      "type": "string",
+      "defaultValue": "UbuntuServer_18.04LTS_Baseline_CustomImage",
+      "metadata": {
+        "description": "Name of the custom iamge to create and distribute using Azure Image Builder."
+      }
+    },
+    "replicationRegions": {
+      "type": "array",
+      "defaultValue": [
+        "australiaeast"
+      ],
+      "metadata": {
+        "description": "List the regions in Azure where you would like to replicate the custom image after it is created."
+      }
+    }
+  },
+  "functions": [],
+  "variables": {
+    "templateIdentityRoleAssignmentName": "[guid(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('templateIdentityName')), resourceGroup().id, resourceId('Microsoft.Authorization/roleDefinitions', parameters('templateIdentityRoleDefinitionName')))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+      "apiVersion": "2018-11-30",
+      "name": "[parameters('templateIdentityName')]",
+      "location": "[parameters('location')]"
+    },
+    {
+      "type": "Microsoft.Authorization/roleDefinitions",
+      "apiVersion": "2018-01-01-preview",
+      "name": "[parameters('templateIdentityRoleDefinitionName')]",
+      "properties": {
+        "roleName": "[parameters('templateIdentityRoleDefinitionName')]",
+        "description": "Used for AIB template and ARM deployment script that runs AIB build",
+        "type": "customRole",
+        "permissions": [
+          {
+            "actions": [
+              "Microsoft.Compute/galleries/read",
+              "Microsoft.Compute/galleries/images/read",
+              "Microsoft.Compute/galleries/images/versions/read",
+              "Microsoft.Compute/galleries/images/versions/write",
+              "Microsoft.Compute/images/read",
+              "Microsoft.Compute/images/write",
+              "Microsoft.Compute/images/delete",
+              "Microsoft.Storage/storageAccounts/blobServices/containers/read",
+              "Microsoft.Storage/storageAccounts/blobServices/containers/write",
+              "Microsoft.ContainerInstance/containerGroups/read",
+              "Microsoft.ContainerInstance/containerGroups/write",
+              "Microsoft.ContainerInstance/containerGroups/start/action",
+              "Microsoft.Resources/deployments/read",
+              "Microsoft.Resources/deploymentScripts/read",
+              "Microsoft.Resources/deploymentScripts/write",
+              "Microsoft.VirtualMachineImages/imageTemplates/run/action"
+            ]
+          }
+        ],
+        "assignableScopes": [
+          "[resourceGroup().id]"
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2021-04-01-preview",
+      "name": "[variables('templateIdentityRoleAssignmentName')]",
+      "properties": {
+        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', parameters('templateIdentityRoleDefinitionName'))]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('templateIdentityName'))).principalId]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('templateIdentityName'))]",
+        "[resourceId('Microsoft.Authorization/roleDefinitions', parameters('templateIdentityRoleDefinitionName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Compute/galleries",
+      "apiVersion": "2020-09-30",
+      "name": "[parameters('imageGalleryName')]",
+      "location": "[parameters('location')]",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Compute/galleries/images",
+      "apiVersion": "2020-09-30",
+      "name": "[format('{0}/{1}', parameters('imageGalleryName'), parameters('imageDefinitionProperties').name)]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "osType": "Linux",
+        "osState": "Generalized",
+        "identifier": {
+          "publisher": "[parameters('imageDefinitionProperties').publisher]",
+          "offer": "[parameters('imageDefinitionProperties').offer]",
+          "sku": "[parameters('imageDefinitionProperties').sku]"
+        },
+        "recommended": {
+          "vCPUs": {
+            "min": 2,
+            "max": 8
+          },
+          "memory": {
+            "min": 16,
+            "max": 48
+          }
+        },
+        "hyperVGeneration": "V1"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/galleries', parameters('imageGalleryName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.VirtualMachineImages/imageTemplates",
+      "apiVersion": "2020-02-14",
+      "name": "[parameters('imageTemplateName')]",
+      "location": "[parameters('location')]",
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('templateIdentityName'))]": {}
+        }
+      },
+      "properties": {
+        "buildTimeoutInMinutes": 60,
+        "vmProfile": {
+          "vmSize": "Standard_D1_v2",
+          "osDiskSizeGB": 30
+        },
+        "source": {
+          "type": "PlatformImage",
+          "publisher": "Canonical",
+          "offer": "UbuntuServer",
+          "sku": "18.04-LTS",
+          "version": "latest"
+        },
+        "customize": [
+          {
+            "type": "Shell",
+            "name": "RunScriptFromSource",
+            "scriptUri": "https://raw.githubusercontent.com/danielsollondon/azvmimagebuilder/master/quickquickstarts/customizeScript.sh"
+          },
+          {
+            "type": "Shell",
+            "name": "CheckSumCompareShellScript",
+            "scriptUri": "https://raw.githubusercontent.com/danielsollondon/azvmimagebuilder/master/quickquickstarts/customizeScript2.sh",
+            "sha256Checksum": "ade4c5214c3c675e92c66e2d067a870c5b81b9844b3de3cc72c49ff36425fc93"
+          },
+          {
+            "type": "File",
+            "name": "downloadBuildArtifacts",
+            "sourceUri": "https://raw.githubusercontent.com/danielsollondon/azvmimagebuilder/master/quickquickstarts/exampleArtifacts/buildArtifacts/index.html",
+            "destination": "/tmp/index.html"
+          },
+          {
+            "type": "Shell",
+            "name": "setupBuildPath",
+            "inline": [
+              "sudo mkdir /buildArtifacts",
+              "sudo cp /tmp/index.html /buildArtifacts/index.html"
+            ]
+          },
+          {
+            "type": "Shell",
+            "name": "InstallUpgrades",
+            "inline": [
+              "sudo apt install unattended-upgrades"
+            ]
+          }
+        ],
+        "distribute": [
+          {
+            "type": "SharedImage",
+            "galleryImageId": "[resourceId('Microsoft.Compute/galleries/images', parameters('imageGalleryName'), parameters('imageDefinitionProperties').name)]",
+            "runOutputName": "[parameters('runOutputName')]",
+            "replicationRegions": "[parameters('replicationRegions')]"
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/galleries/images', parameters('imageGalleryName'), parameters('imageDefinitionProperties').name)]",
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('templateIdentityName'))]"
+      ]
+    }
+  ]
+}

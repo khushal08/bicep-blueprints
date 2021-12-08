@@ -1,5 +1,34 @@
 include config.mk
 
+# Azure Front Door
+build-afd:
+	@bicep build $(AFD_BICEP) --outdir $(AFD_OUT)
+	@az deployment group what-if \
+	--resource-group $(RG_NAME) \
+  	--template-file $(AFD_BICEP)
+
+deploy-afd:
+	@az deployment group create \
+	--mode "Complete" \
+	--name $(DEPLOYMENT_NAME) \
+	--resource-group $(RG_NAME) \
+	--template-file $(AFD_BICEP) 
+
+# AIB
+# Azure Front Door
+build-aib:
+	@bicep build $(AIB_BICEP) --outdir $(AIB_OUT)
+	@az deployment group what-if \
+	--resource-group $(RG_NAME) \
+  	--template-file $(AIB_BICEP)
+
+deploy-aib:
+	@az deployment group create \
+	--mode "Complete" \
+	--name $(DEPLOYMENT_NAME) \
+	--resource-group $(RG_NAME) \
+	--template-file $(AIB_BICEP) 
+
 # Web Application
 build-web-app:
 	@bicep build $(WEB_APP_BICEP) --outdir $(WEB_APP_OUT)
@@ -119,17 +148,9 @@ context:
 
 # Prep
 prep:
-	@mkdir -p $(WEB_APP_OUT)
-	@mkdir -p build/module/virtual-network/
-	@mkdir -p build/module/asev2/
-	@mkdir -p build/module/asev3/
-	@mkdir -p build/module/app-service-plan/
-	@mkdir -p build/module/redis/
-	@mkdir -p build/module/acr/
-	@mkdir -p $(SQL_DB_OUT)
-	@mkdir -p $(AKV_OUT)
-	@mkdir -p $(VMSS_OUT)
-	@mkdir -p $(WEB_APP_MULTI_OUT)
+	for directory in $(LIST); do \
+		mkdir -p $$directory; \
+	done
 
 # Cleanup
 clean:
@@ -143,7 +164,19 @@ upgrade-az-azcli:
 	@apt-get install \
 	--only-upgrade -y azure-cli
 
+upgrade-az-bicep:
+	@az bicep upgrade
+
 create-rg:
 	@az group create \
 	--name $(RG_NAME) \
 	--location $(LOCATION)
+
+# Unit testing
+# LIST= 1 2 3 \
+# 4 5 6 7 8 \
+# 9 10
+target:
+	for i in $(LIST) ; do \
+		echo $$i ; \
+	done
