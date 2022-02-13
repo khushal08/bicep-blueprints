@@ -70,7 +70,8 @@ resource templateIdentityRoleDefinition 'Microsoft.Authorization/roleDefinitions
   }
 }
 
-resource templateRoleAssignment 'Microsoft.Authorization/roleAssignments@2021-04-01-preview' = {
+// 2019-04-01-preview,2020-03-01-preview,2020-04-01-preview,2020-08-01-preview,2021-04-01-preview
+resource templateRoleAssignment 'Microsoft.Authorization/roleAssignments@2020-08-01-preview' = {
   name: templateIdentityRoleAssignmentName
   properties: {
     roleDefinitionId: templateIdentityRoleDefinition.id

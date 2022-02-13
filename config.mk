@@ -1,5 +1,5 @@
 SUBSCRIPTION_ID = "Microsoft Azure Sponsorship 1"
-RG_NAME = "aib-rg"
+RG_NAME = "akv-rg"
 LOCATION = "australiaeast"
 DEPLOYMENT_NAME = "webapp03deploy01"
 REDIS_BICEP = "src/module/redis/main.bicep"
@@ -12,7 +12,7 @@ SQL_DB_OUT = "build/module/sql-database/"
 CERT_NAME = "webapp03spcert"
 APP_NAME = "webapp03sp"
 # AKV
-AKV_NAME = "webapp03spakv"
+AKV_NAME = "oneclouddemoakv01"
 AKV_BICEP = "src/module/akv/main.bicep"
 AKV_OUT = "build/module/akv/"
 # Web App

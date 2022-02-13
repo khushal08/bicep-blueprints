@@ -4,14 +4,13 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.4.613.9944",
-      "templateHash": "9309857793063828427"
+      "version": "0.4.1124.51302",
+      "templateHash": "15510762078858175915"
     }
   },
   "parameters": {
     "keyVaultName": {
       "type": "string",
-      "defaultValue": "webapp03spakv",
       "metadata": {
         "description": "Specifies the name of the key vault."
       }
@@ -63,7 +62,6 @@
       }
     }
   },
-  "functions": [],
   "resources": [
     {
       "type": "Microsoft.KeyVault/vaults",

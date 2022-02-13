@@ -1,1 +1,5 @@
-{}
+{
+    "keyVaultName": {
+        "value": "policy2"
+    }
+}

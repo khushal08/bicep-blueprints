@@ -1,0 +1,20 @@
+az account show
+az account set --subscription "Microsoft Azure Sponsorship 1"
+
+# NetAPP
+az feature list | grep NetApp
+az provider register --namespace Microsoft.NetApp --wait
+az provider show --namespace Microsoft.NetApp 
+
+RESOURCE_GROUP="myRG1"
+LOCATION="eastus"
+ANF_ACCOUNT_NAME="myaccount1"
+
+az group create \
+    --name $RESOURCE_GROUP \
+    --location $LOCATION
+
+az netappfiles account create \
+    --resource-group $RESOURCE_GROUP \
+    --location $LOCATION \
+    --account-name $ANF_ACCOUNT_NAME

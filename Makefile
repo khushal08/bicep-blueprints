@@ -29,6 +29,28 @@ deploy-aib:
 	--resource-group $(RG_NAME) \
 	--template-file $(AIB_BICEP) 
 
+list-vm-aib:
+	@az vm image list --publisher Canonical --offer UbuntuServer --all
+
+list-vm-def:
+	@az sig image-definition list --gallery-name ImageGallery_3cc898ba -g aib-rg01
+
+create-vm-ver:
+	@az sig image-version create \
+	--resource-group $(RG_NAME) \
+	--gallery-image-definition 'UbuntuServer18LTS' \
+	--gallery-image-version '0.0.1' \
+	--gallery-name 'ImageGallery_3cc898ba' 
+
+create-vm-aib:
+	@az vm create \
+	--resource-group $(RG_NAME) \
+	--name aibImgVm0001 \
+	--admin-username aibuser \
+	--image 'UbuntuServer18LTS' \
+	--location $(LOCATION) \
+	--generate-ssh-keys
+
 # Web Application
 build-web-app:
 	@bicep build $(WEB_APP_BICEP) --outdir $(WEB_APP_OUT)
@@ -68,13 +90,15 @@ build-akv:
 	@bicep build $(AKV_BICEP) --outdir $(AKV_OUT)
 	@az deployment group what-if \
 	--resource-group $(RG_NAME) \
-  	--template-file $(AKV_BICEP)
+  	--template-file $(AKV_BICEP) \
+	--parameters keyVaultName=$(AKV_NAME)
 
 deploy-akv:
 	@az deployment group create \
 	--name $(DEPLOYMENT_NAME) \
 	--resource-group $(RG_NAME) \
-	--template-file $(AKV_BICEP) 
+	--template-file $(AKV_BICEP) \
+	--parameters keyVaultName=$(AKV_NAME)
 
 # Redis
 build-redis:
@@ -146,6 +170,15 @@ connect: login
 context: 
 	@az account list --query "[?isDefault]"
 
+# Find diagnostic log categories
+diag-cat:
+	@az monitor diagnostic-settings categories list \
+	--resource-group $(RG_NAME) \
+	--resource-type "Microsoft.Web/serverfarms" \
+	--resource test01010101
+
+# az monitor diagnostic-settings categories list -g myRG --resource-type microsoft.logic/workflows --resource myWorkflow
+
 # Prep
 prep:
 	for directory in $(LIST); do \
@@ -180,3 +213,4 @@ target:
 	for i in $(LIST) ; do \
 		echo $$i ; \
 	done
+

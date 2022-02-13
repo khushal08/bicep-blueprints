@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.4.613.9944",
-      "templateHash": "4826667112187763399"
+      "version": "0.4.1008.15138",
+      "templateHash": "4361110373136689248"
     }
   },
   "parameters": {
@@ -121,7 +121,7 @@
     },
     {
       "type": "Microsoft.Authorization/roleAssignments",
-      "apiVersion": "2021-04-01-preview",
+      "apiVersion": "2020-08-01-preview",
       "name": "[variables('templateIdentityRoleAssignmentName')]",
       "properties": {
         "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', parameters('templateIdentityRoleDefinitionName'))]",
@@ -177,7 +177,7 @@
       "identity": {
         "type": "UserAssigned",
         "userAssignedIdentities": {
-          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('templateIdentityName'))]": {}
+          "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('templateIdentityName')))]": {}
         }
       },
       "properties": {
